@@ -1,0 +1,5 @@
+node_modules
+dist
+.env
+aiService0.ts
+uploadFileToOpenAI.ts

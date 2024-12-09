@@ -1,0 +1,89 @@
+// Variables
+$primary-color: #353ebc;
+$border-radius: 8px;
+$transition-duration: 0.3s;
+$box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+.nav {
+  display: flex;
+  justify-content: space-around;
+  font-weight: 500;
+
+  &_item {
+    padding: 0.5rem 3rem;
+    }
+  
+  a {
+    display: block;
+    background-color: $primary-color;
+    color: #fff;
+    text-decoration: none;
+    transition: all $transition-duration ease;
+    padding: 0.5rem 3rem;
+
+    &:hover {
+      background-color: #2d3291;
+    }
+    
+    &:active {
+      background-color: #535bf2;
+    }
+  }
+}
+
+.container {
+  max-width: 500px;
+  margin: 2rem auto;
+  background-color: #ffffff;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow;
+
+  form {
+    width: 90%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    div {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      label {
+        font-size: 0.9rem;
+        color: #333;
+        font-weight: 500;
+      }
+
+      input {
+        padding: 0.8rem;
+        border: 1px solid #ddd;
+        border-radius: $border-radius;
+        font-size: 1rem;
+        transition: all $transition-duration ease;
+
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+          box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
+        }
+
+        &[type="number"] {
+          width: 120px;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 600px) {
+    margin: 1rem;
+    padding: 1rem;
+
+    form div {
+      input {
+        padding: 0.6rem;
+      }
+    }
+  }
+}
