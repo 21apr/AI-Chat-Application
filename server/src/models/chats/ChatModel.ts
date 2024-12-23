@@ -16,7 +16,14 @@ export const ChatSchema = new Schema({
   lastUpdated: { type: Date, default: Date.now },
   messages: [{ type: Schema.Types.ObjectId, ref: "Message" }],
   user: { type: Schema.Types.ObjectId, ref: "User" },
+  file: { type: Schema.Types.ObjectId, ref: "File" },
 });
+
+export const FileSchema = new Schema({
+  name: { type: String },
+  content: { type: String },
+})
 
 export const ChatModel = model("Chat", ChatSchema);
 export const MessageModel = model("Message", MessageSchema);
+export const FileModel = model("File", FileSchema);

@@ -7,6 +7,7 @@ import { getMessages } from "../../../controllers/getMessages";
 import { useUser } from "../../../contexts/UserContext";
 import TextInput from "./TextInput";
 
+const chatId = location.pathname.split("/").pop();
 const QuestionApp = () => {
   const { user } = useUser();
   const [chats, setChats] = useState<Message[]>([]);
@@ -15,10 +16,12 @@ const QuestionApp = () => {
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const chatId = location.pathname.split("/").pop();
+    // const chatId = location.pathname.split("/").pop();
     if (chatId && location.pathname.startsWith("/chats")) {
       getMessages(chatId).then((data) => {
-        setChats(data);
+        setChats(data.messages);
+        if (data.file)
+        setFile({ name: data.file.name, content: data.file.content });
       });
     }
   }, []);
@@ -27,84 +30,10 @@ const QuestionApp = () => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTo({
         top: chatContainerRef.current.scrollHeight,
-        behavior: "smooth", 
+        behavior: "smooth",
       });
     }
   }, [chats]);
-
-  const handleSendQuestion = async () => {
-    if (!inputText.trim())
-      return alert("Please enter a question before sending.");
-
-    const newMessage: Message = {
-      question: inputText,
-      answer: "",
-      file: file ? { ...file } : undefined,
-    };
-
-    setChats((prev) => [...prev, newMessage]);
-    setInputText("");
-    const inputField = document.querySelector(".text-input-field");
-    if (inputField) inputField.textContent = "";
-
-    try {
-      if (user) {
-        const chatId = location.pathname.startsWith("/chats")
-          ? location.pathname.split("/").pop()
-          : null;
-
-        if (!chatId) {
-          const response = await fetch("/api/users/createChat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ question: inputText, fileContent: file?.content || "" }),
-          });
-
-          if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
-
-          const newChat = await response.json();
-          window.location.href = `/chats/${newChat._id}`;
-        } else {
-          const response = await fetch("/api/users/addMessage", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              question: inputText,
-              fileContent: file?.content || "",
-              chatId,
-            }),
-          });
-
-          if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
-
-          const data = await response.json();
-
-          setChats((prev) =>
-            prev.map((chat) =>
-              chat._id === data.message._id ? { ...chat, answer: data.savedMessage.answer } : chat
-            )
-          );
-        }
-      } else {
-        const response = await fetch("/api/ask", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question: inputText, fileContent: file?.content || "" }),
-        });
-
-        if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
-
-        const data = await response.json();
-        setChats((prev) =>
-          prev.map((chat, index) =>
-            index === prev.length - 1 ? { ...chat, answer: data.answer } : chat
-          )
-        );
-      }
-    } catch (error) {
-      console.error("Error fetching answer:", error);
-    }
-  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files || event.target.files.length === 0) return;
@@ -128,7 +57,86 @@ const QuestionApp = () => {
     event.target.value = "";
   };
 
-  const handleClearFile = () => setFile(null);
+  const handleClearFile = async() => {
+    if (!chatId) setFile(null);
+    else {
+      const response = await fetch(`/api/users/${chatId}/deleteFile`,{
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      })
+      if (response.ok) {
+        setFile(null);
+      }
+    }
+  }
+
+  const handleSendQuestion = async () => {
+    if (!inputText.trim())
+      return alert("Please enter a question before sending.");
+
+    const newMessage: Message = {
+      question: inputText,
+      answer: "",
+      file: file ? { ...file } : undefined,
+    };
+
+    setChats((prev) => [...prev, newMessage]);
+    setInputText("");
+    const inputField = document.querySelector(".text-input-field");
+    if (inputField) inputField.textContent = "";
+
+    try {
+      if (user) {
+        const chatId = location.pathname.startsWith("/chats")
+          ? location.pathname.split("/").pop()
+          : null;
+
+        const response = await fetch("/api/users/addMessage", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            question: inputText,
+            file,
+            chatId,
+          }),
+        });
+
+        if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
+
+        const data = await response.json();
+
+        if (!chatId) {
+          window.location.href = `/chats/${data.chatServer._id}`;
+        }
+        console.log(data);
+
+        setChats((prev) =>
+          prev.map((chat, index) =>
+            index === prev.length - 1 ? { ...chat, answer: data.savedMessage.answer } : chat
+          )
+        );
+
+      } else {
+        const response = await fetch("/api/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: inputText, fileContent: file?.content || "" }),
+        });
+
+        if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
+
+        const data = await response.json();
+        setChats((prev) =>
+          prev.map((chat, index) =>
+            index === prev.length - 1 ? { ...chat, answer: data.answer } : chat
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching answer:", error);
+    }
+  };
 
   return (
     <div className="question-app">
@@ -157,7 +165,7 @@ const QuestionApp = () => {
           {file ? (
             <div className="file-info">
               <button onClick={handleClearFile}>
-                <i className="bx bxs-trash" style={{ color: "#ffffff" }}></i>
+                <i className="bx bxs-trash"></i>
               </button>
               <p>{file.name}</p>
             </div>
@@ -183,7 +191,7 @@ const QuestionApp = () => {
         </div>
       </div>
     </div>
-    
+
   );
 };
 

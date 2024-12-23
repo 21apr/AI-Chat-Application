@@ -1,7 +1,7 @@
 import express from 'express';
 import { addUser, getUser, login, register } from '../controllers/usersCont';
 import { checkUser } from '../middlewares/authMiddleware';
-import { addMessage, getMessages, setChat } from '../controllers/chatsCont';
+import { addMessage, getMessages, deleteFile } from '../controllers/chatsCont';
 const router = express.Router();
 
 router
@@ -13,9 +13,9 @@ router.use(checkUser);
 router
 .post("/add-client", addUser)
 .get("/getUser", getUser)
-.post("/createChat", setChat)
 .get("/:chatId/messages", getMessages)
 .post("/addMessage", addMessage)
+.delete("/:chatId/deleteFile", deleteFile)
 
 
 export default router

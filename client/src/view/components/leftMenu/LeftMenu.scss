@@ -5,14 +5,18 @@ nav {
     overflow-y: auto;
     overflow-x: hidden;
 
+
     ul {
         list-style-type: none;
         margin: 0;
         padding: 0;
+        
         overflow: hidden;
         background-color: #333;
         li {
             white-space: nowrap;
+
+
             a {
                 display: block;
                 color: white;

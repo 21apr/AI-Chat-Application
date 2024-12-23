@@ -4,6 +4,10 @@ export interface Chat {
   messages: Message[];
   lastUpdated: Date;
   user: string;
+  file?: {
+    name: string;
+    content: string;
+  };
 }
 
 export interface Message {

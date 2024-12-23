@@ -21,7 +21,7 @@ export async function getAnswer(req: any, res: any) {
 
 export async function getAnswerFromOpenAI(question: string, fileContent: string) {
   try {
-    const numberOfTokensForAnswer = 150
+    const numberOfTokensForAnswer = 1000
     if (fileContent === "") {
       const response = await client.chat.completions.create({
         model: "gpt-3.5-turbo",

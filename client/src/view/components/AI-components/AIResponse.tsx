@@ -56,7 +56,7 @@ const formatResponse = (text: string) => {
 
 const AIResponse: FC<{ responseText: string }> = ({ responseText }) => {
   return (
-    <div>
+    <div className='answer-bubble'>
       <ul>{formatResponse(responseText)}</ul>
     </div>
   );
